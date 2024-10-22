@@ -1,2 +1,4 @@
 model/*
-!model/.gitkeep
+data/cnn_dailymail/*
+
+!**/.gitkeep
