@@ -22,8 +22,7 @@ def move_files_and_directories(src, dst):
         
         if os.path.isdir(source):
             shutil.copytree(source, destin, dirs_exist_ok=True)
-            shutil.rmtree(source)
         else:
-            shutil.move(source, destin)
+            shutil.copy(source, destin)
 
 move_files_and_directories(path, local_data_path)
