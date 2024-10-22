@@ -1,0 +1,3 @@
+- clean the data
+  - check this: https://github.com/abisee/cnn-dailymail
+- 

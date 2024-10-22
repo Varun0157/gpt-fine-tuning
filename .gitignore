@@ -1,4 +1,6 @@
 model/*
 data/cnn_dailymail/*
+*.pth
+**/__pycache__/
 
 !**/.gitkeep
