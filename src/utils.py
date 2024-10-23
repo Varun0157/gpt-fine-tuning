@@ -1,50 +1,138 @@
-from torch.utils.data import Dataset, DataLoader
+import time
 
-import pandas as pd
+import torch
+from torch.optim import AdamW
+
+from evaluate import load
 
 
-class SummarizationDataset(Dataset):
-    def __init__(self, tokenizer, file_path, max_len=512):
-        self.data = pd.read_csv(file_path, nrows=10)
-        self.tokenizer = tokenizer
-        self.max_len = max_len
+def train(model, train_dataloader, optimizer, accumulation_steps=1):
+    model.train()
 
-    def __len__(self):
-        return len(self.data)
+    total_loss = 0
+    optimizer.zero_grad()
 
-    def __getitem__(self, idx):
-        article = self.data.loc[idx, "article"]
-        summary = self.data.loc[idx, "highlights"]
+    for step, batch in enumerate(train_dataloader):
+        input_ids = batch["input_ids"].to(model.device)
+        attention_mask = batch["attention_mask"].to(model.device)
+        labels = batch["labels"].to(model.device)
 
-        # todo: check what the output of self.tokenizer is
-        # todo: why do we only care about input_ids
+        outputs = model(input_ids, attention_mask=attention_mask, labels=labels)
+        loss = outputs.loss
 
-        inputs = self.tokenizer(
-            article,
-            max_length=self.max_len,
-            padding="max_length",
-            truncation=True,
-            return_tensors="pt",
+        loss.backward()
+        total_loss += loss.item()
+
+        if (step + 1) % accumulation_steps == 0 or (step + 1) == len(train_dataloader):
+            optimizer.step()
+            optimizer.zero_grad()
+
+    return total_loss
+
+
+def validate(model, val_dataloader):
+    model.eval()
+
+    total_loss = 0
+    with torch.no_grad():
+        for batch in val_dataloader:
+            input_ids = batch["input_ids"].to(model.device)
+            attention_mask = batch["attention_mask"].to(model.device)
+            labels = batch["labels"].to(model.device)
+
+            outputs = model(input_ids, attention_mask=attention_mask, labels=labels)
+            loss = outputs.loss
+
+            total_loss += loss.item()
+
+    return total_loss
+
+
+def train_and_validate(
+    model, train_dataloader, valid_dataloader, epochs=10, lr=5e-4, accumulation_steps=1
+):
+    optimizer = AdamW(model.parameters(), lr=lr)
+
+    best_model_path = "best_model.pth"
+    best_val_loss = float("inf")
+
+    for epoch in range(epochs):
+        start_time = time.time()
+        train_loss = train(
+            model, train_dataloader, optimizer, accumulation_steps=accumulation_steps
         )
-        summary = self.tokenizer(
-            summary,
-            max_length=self.max_len,
-            padding="max_length",
-            truncation=True,
-            return_tensors="pt",
+        val_loss = validate(model, valid_dataloader)
+        time_taken = time.time() - start_time
+
+        print(
+            f"epoch: {epoch} -> train loss: {train_loss}, val loss: {val_loss} in {time_taken} seconds"
         )
 
-        return {
-            "input_ids": inputs["input_ids"].squeeze(0),
-            "attention_mask": inputs["attention_mask"].squeeze(0),
-            "labels": summary["input_ids"].squeeze(0),
-        }
+        if val_loss > best_val_loss:
+            continue
+
+        best_val_loss = val_loss
+        torch.save(model.state_dict(), best_model_path)
+        print("\tmodel saved")
 
 
-def get_dataloader(tokenizer, file_path, batch_size=8, max_length=512):
-    dataset = SummarizationDataset(
-        tokenizer=tokenizer, file_path=file_path, max_len=max_length
+def test(model, test_dataloader):
+    model.eval()
+
+    total_loss = 0
+    with torch.no_grad():
+        for batch in test_dataloader:
+            input_ids = batch["input_ids"].to(model.device)
+            attention_mask = batch["attention_mask"].to(model.device)
+            labels = batch["labels"].to(model.device)
+
+            outputs = model(input_ids, attention_mask=attention_mask, labels=labels)
+            loss = outputs.loss
+
+            total_loss += loss.item()
+
+    return total_loss
+
+
+def compute_rouge(model, test_dataloader, tokenizer, device):
+    model.eval()
+    generated_summaries = []
+    target_summaries = []
+
+    with torch.no_grad():
+        for batch in test_dataloader:
+            input_ids = batch["input_ids"].to(device)
+            attention_mask = batch["attention_mask"].to(device)
+            labels = batch["labels"].to(device)
+
+            outputs = model.generate(
+                input_ids,
+                attention_mask=attention_mask,
+                max_length=384,
+                num_beams=4,
+                early_stopping=True,
+            )
+            generated_summaries.extend(
+                tokenizer.batch_decode(outputs, skip_special_tokens=True)
+            )
+            target_summaries.extend(
+                tokenizer.batch_decode(labels, skip_special_tokens=True)
+            )
+
+    rouge = load("rouge")
+    results = rouge.compute(
+        predictions=generated_summaries, references=target_summaries
     )
-    dataloader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
+    assert results is not None
 
-    return dataloader
+    return results
+
+
+def evaluate_model(model, test_dataloader, tokenizer, device):
+    test_loss = test(model, test_dataloader)
+    print(f"Test loss: {test_loss}")
+
+    rouge_res = compute_rouge(model, test_dataloader, tokenizer, device)
+    print("ROUGE results:")
+    for metric, results in rouge_res.items():
+        print(f"{metric}: {results}")

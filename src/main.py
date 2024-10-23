@@ -1,27 +1,28 @@
 import torch
 from soft_prompts import SoftPromptModel
-from models import train_and_validate, test
-from utils import get_dataloader
+from utils import evaluate_model, train_and_validate, test
+from data import get_dataloader
 from transformers import AutoTokenizer
 
+# Set basic parameters
+model_dir = "./model"
+train_data = "./data/cnn_dailymail/train.csv"
+valid_data = "./data/cnn_dailymail/validation.csv"
+
+DESIRED_BATCH_SIZE = 64
+MAX_BATCHES_IN_MEM = 2
+assert DESIRED_BATCH_SIZE % MAX_BATCHES_IN_MEM == 0
+accumulation_steps = DESIRED_BATCH_SIZE // MAX_BATCHES_IN_MEM
+
+num_prompts = 5
+epochs = 3
+lr = 5e-3
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+
 def main():
-    # Set basic parameters
-    model_dir = "./model"
-    train_data = "./data/cnn_dailymail/train.csv"
-    valid_data = "./data/cnn_dailymail/validation.csv"
-
-    DESIRED_BATCH_SIZE = 64
-    MAX_BATCHES_IN_MEM = 1
-    assert DESIRED_BATCH_SIZE % MAX_BATCHES_IN_MEM == 0
-    accumulation_steps = DESIRED_BATCH_SIZE // MAX_BATCHES_IN_MEM
-
-    num_prompts = 5
-    epochs = 10
-    lr = 5e-3
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_dir)
+    tokenizer = AutoTokenizer.from_pretrained(model_dir, padding_side="left")
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
@@ -38,6 +39,7 @@ def main():
         model_dir, num_prompts=num_prompts, embedding_dim=768, device=device
     )
     model = model.to(device)
+    model.gpt2.generation_config.pad_token_id = tokenizer.pad_token_id
 
     # Train the model
     train_and_validate(
@@ -48,6 +50,15 @@ def main():
         lr=lr,
         accumulation_steps=accumulation_steps,
     )
+
+    # test
+    test_data = "./data/cnn_dailymail/test.csv"
+    test_dataloader = get_dataloader(
+        tokenizer, test_data, batch_size=MAX_BATCHES_IN_MEM
+    )
+    checkpoint = torch.load("best_model.pth", weights_only=True)
+    model.load_state_dict(checkpoint)
+    evaluate_model(model, test_dataloader, tokenizer, device)
 
 
 if __name__ == "__main__":
