@@ -1,0 +1,15 @@
+name: anlp-a3
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pytorch
+  - pytorch-cuda=12.4
+  - torchaudio
+  - torchvision
+  - evaluate
+  - kagglehub
+  - transformers[version='>=3.5']
+  - datasets==2.10.0
+  - rouge-score
+prefix: /home/varun/miniconda3/envs/anlp-a3

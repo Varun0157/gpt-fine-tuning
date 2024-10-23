@@ -20,12 +20,7 @@ lr = 5e-3
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-def main():
-    # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_dir, padding_side="left")
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-
+def train(model, tokenizer):
     # Initialize dataloader
     train_dataloader = get_dataloader(
         tokenizer, train_data, batch_size=MAX_BATCHES_IN_MEM
@@ -33,13 +28,6 @@ def main():
     valid_dataloader = get_dataloader(
         tokenizer, valid_data, batch_size=MAX_BATCHES_IN_MEM
     )
-
-    # Initialize soft prompt model
-    model = SoftPromptModel(
-        model_dir, num_prompts=num_prompts, embedding_dim=768, device=device
-    )
-    model = model.to(device)
-    model.gpt2.generation_config.pad_token_id = tokenizer.pad_token_id
 
     # Train the model
     train_and_validate(
@@ -51,7 +39,8 @@ def main():
         accumulation_steps=accumulation_steps,
     )
 
-    # test
+
+def test(model, tokenizer):
     test_data = "./data/cnn_dailymail/test.csv"
     test_dataloader = get_dataloader(
         tokenizer, test_data, batch_size=MAX_BATCHES_IN_MEM
@@ -59,6 +48,26 @@ def main():
     checkpoint = torch.load("best_model.pth", weights_only=True)
     model.load_state_dict(checkpoint)
     evaluate_model(model, test_dataloader, tokenizer, device)
+
+
+def main():
+    # Load tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(model_dir, padding_side="left")
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+
+    # Initialize soft prompt model
+    model = SoftPromptModel(
+        model_dir, num_prompts=num_prompts, embedding_dim=768, device=device
+    )
+    model = model.to(device)
+    model.gpt2.generation_config.pad_token_id = tokenizer.pad_token_id
+
+    print("beginning training")
+    train(model, tokenizer)
+    print("beginning testing")
+    test(model, tokenizer)
 
 
 if __name__ == "__main__":

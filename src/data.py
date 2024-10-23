@@ -5,7 +5,7 @@ import pandas as pd
 
 class SummarizationDataset(Dataset):
     def __init__(self, tokenizer, file_path, max_len=384):
-        self.data = pd.read_csv(file_path, nrows=10)
+        self.data = pd.read_csv(file_path, nrows=2000)
         self.tokenizer = tokenizer
         self.max_len = max_len
 
