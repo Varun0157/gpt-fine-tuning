@@ -1,50 +1,47 @@
 from torch.utils.data import Dataset, DataLoader
-
 import pandas as pd
 
 
-class SummarizationDataset(Dataset):
-    def __init__(self, tokenizer, file_path, max_len=384):
-        self.data = pd.read_csv(file_path, nrows=2000)
+class CNNDailyMailDataset(Dataset):
+    def __init__(self, file_path, tokenizer, max_length=384):
+        self.data = pd.read_csv(file_path, nrows=10)
         self.tokenizer = tokenizer
-        self.max_len = max_len
+        self.max_length = max_length
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        article = self.data.loc[idx, "article"]
-        summary = self.data.loc[idx, "highlights"]
+        article = str(self.data.loc[idx, "article"])
+        summary = str(self.data.loc[idx, "highlights"])
 
-        # todo: check what the output of self.tokenizer is
-        # todo: why do we only care about input_ids
-
+        # Tokenize the article and summary
         inputs = self.tokenizer(
             article,
-            max_length=self.max_len,
+            max_length=self.max_length,
             padding="max_length",
             truncation=True,
             return_tensors="pt",
         )
-        summary = self.tokenizer(
+
+        labels = self.tokenizer(
             summary,
-            max_length=self.max_len,
+            max_length=self.max_length,
             padding="max_length",
             truncation=True,
             return_tensors="pt",
-        )
+        )["input_ids"]
+
+        # Replace padding token id's in labels with -100 to ignore them during loss calculation
+        labels[labels == self.tokenizer.pad_token_id] = -100
 
         return {
             "input_ids": inputs["input_ids"].squeeze(0),
             "attention_mask": inputs["attention_mask"].squeeze(0),
-            "labels": summary["input_ids"].squeeze(0),
+            "labels": labels.squeeze(0),
         }
 
 
-def get_dataloader(tokenizer, file_path, batch_size=8, max_length=256):
-    dataset = SummarizationDataset(
-        tokenizer=tokenizer, file_path=file_path, max_len=max_length
-    )
-    dataloader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
-
-    return dataloader
+def create_dataloader(file_path, tokenizer, batch_size=8):
+    dataset = CNNDailyMailDataset(file_path, tokenizer)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=True)

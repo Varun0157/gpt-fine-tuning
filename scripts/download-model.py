@@ -1,8 +1,9 @@
 # Load model directly
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import GPTNeoForCausalLM, GPT2Tokenizer
 
-tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")
-model = AutoModelForCausalLM.from_pretrained("openai-community/gpt2")
+model_name = "EleutherAI/gpt-neo-125m"
+tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+model = GPTNeoForCausalLM.from_pretrained(model_name)
 
 local_save_path = "./model"
 
