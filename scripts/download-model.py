@@ -1,4 +1,5 @@
-# Load model directly
+import shutil
+
 from transformers import GPTNeoForCausalLM, GPT2Tokenizer
 
 model_name = "EleutherAI/gpt-neo-125m"
@@ -7,5 +8,9 @@ model = GPTNeoForCausalLM.from_pretrained(model_name)
 
 local_save_path = "./model"
 
+# delete local save path
+shutil.rmtree(local_save_path, ignore_errors=True)
+
+# save the model and tokenizer
 tokenizer.save_pretrained(local_save_path)
 model.save_pretrained(local_save_path)

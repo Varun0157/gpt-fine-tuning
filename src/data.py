@@ -4,7 +4,7 @@ import pandas as pd
 
 class CNNDailyMailDataset(Dataset):
     def __init__(self, file_path, tokenizer, max_length=384):
-        self.data = pd.read_csv(file_path, nrows=10)
+        self.data = pd.read_csv(file_path, nrows=100)
         self.tokenizer = tokenizer
         self.max_length = max_length
 

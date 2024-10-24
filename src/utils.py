@@ -80,3 +80,7 @@ def train_and_validate(
         best_valid_loss = valid_loss
         torch.save(model.state_dict(), best_model_path)
         print("\tbest model saved")
+
+
+def _test(model, test_dataloader):
+    pass

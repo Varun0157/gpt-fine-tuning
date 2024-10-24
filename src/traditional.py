@@ -6,25 +6,35 @@ class GPTNeoForSummarization(nn.Module):
     def __init__(self, device):
         super(GPTNeoForSummarization, self).__init__()
         self.device = device
-        
+
         # Load the pre-trained GPT-Neo model
-        self.model = GPTNeoForCausalLM.from_pretrained("./model")
-        self.model.to(self.device)
+        self.gpt2_neo = GPTNeoForCausalLM.from_pretrained("./model")
+        self.gpt2_neo.to(self.device)
+
+        print(
+            "num params before freezing: ",
+            sum(p.numel() for p in self.gpt2_neo.parameters()),
+        )
 
         # Freeze all layers except the `lm_head`
-        for param in self.model.parameters():
+        for param in self.gpt2_neo.parameters():
             param.requires_grad = False
 
         # Only allow the `lm_head` (the output layer) to be fine-tuned
-        for param in self.model.lm_head.parameters():
+        for param in self.gpt2_neo.lm_head.parameters():
             param.requires_grad = True
+
+        print(
+            "num_params after freezing: ",
+            sum(p.numel() for p in self.gpt2_neo.parameters() if p.requires_grad),
+        )
 
     def forward(self, input_ids, attention_mask, labels=None):
         input_ids = input_ids.to(self.device)
         attention_mask = attention_mask.to(self.device)
-        
+
         # Forward pass through the model
-        outputs = self.model(
+        outputs = self.gpt2_neo(
             input_ids=input_ids, attention_mask=attention_mask, labels=labels
         )
 
