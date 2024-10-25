@@ -34,7 +34,8 @@ def _train(model, dataloader, criterion, optimizer, accumulation_steps: int = 1)
             optimizer.step()
             optimizer.zero_grad()
 
-    return total_loss
+    NUM_SAMPLES = len(dataloader.dataset)
+    return total_loss / NUM_SAMPLES
 
 
 def _validate(model, dataloader, criterion):
@@ -55,14 +56,15 @@ def _validate(model, dataloader, criterion):
             loss = criterion(logits, labels)
             total_loss += loss.item()
 
-    return total_loss
+    NUM_SAMPLES = len(dataloader.dataset)
+    return total_loss / NUM_SAMPLES
 
 
 def train_and_validate(
     model,
     train_dataloader,
     valid_dataloader,
-    num_epochs=3,
+    num_epochs=10,
     lr=5e-4,
     accumulation_steps: int = 1,
 ):
@@ -140,7 +142,8 @@ def test(model, tokenizer, test_dataloader):
                     tokenizer.decode(references, skip_special_tokens=True)
                 )
 
-    print(f"test loss: {total_loss}")
+    NUM_SAMPLES = len(test_dataloader.dataset)
+    print(f"test loss: {total_loss / NUM_SAMPLES}")
 
     rouge = load("rouge")
     results = rouge.compute(

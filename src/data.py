@@ -1,4 +1,5 @@
 from enum import Enum
+from string import punctuation as PUNCTUATION
 
 from torch.utils.data import Dataset, DataLoader
 import pandas as pd
@@ -13,6 +14,13 @@ class DatasetType(Enum):
 
 
 def _clean_text(text):
+    sentences = text.split("\n")
+    if len(sentences) > 1:
+        return " . ".join([_clean_text(sentence) for sentence in sentences]).strip()
+
+    for ch in PUNCTUATION:  # removed - for instances like well-known
+        text = text.replace(ch, " ")
+
     return text.strip()
 
 
