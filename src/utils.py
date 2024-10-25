@@ -6,6 +6,8 @@ from torch.optim import AdamW
 
 from evaluate import load
 
+IGNORE_INDEX = -100
+
 
 def _train(model, dataloader, criterion, optimizer, accumulation_steps: int = 1):
     model.train()
@@ -66,7 +68,7 @@ def train_and_validate(
 ):
     model.train()
 
-    criterion = nn.CrossEntropyLoss(ignore_index=-100)
+    criterion = nn.CrossEntropyLoss(ignore_index=IGNORE_INDEX)
 
     # Initialize AdamW optimizer
     optimizer = AdamW(model.parameters(), lr=lr)
@@ -100,7 +102,7 @@ def train_and_validate(
 def test(model, tokenizer, test_dataloader):
     model.eval()
 
-    criterion = nn.CrossEntropyLoss(ignore_index=-100)
+    criterion = nn.CrossEntropyLoss(ignore_index=IGNORE_INDEX)
 
     all_predictions, all_references = [], []
 
@@ -108,29 +110,46 @@ def test(model, tokenizer, test_dataloader):
     for batch in test_dataloader:
         input_ids = batch["input_ids"].to(model.device)
         attention_mask = batch["attention_mask"].to(model.device)
-        labels = batch["labels"].to(model.device)
+
+        labels = batch["labels"].to(model.device)  # (b, s)
+        batch_labels = labels.view(-1)  # (b * s)
 
         with torch.no_grad():
-            logits = model(input_ids, attention_mask)
-            loss = criterion(logits.view(-1, logits.shape[-1]), labels.view(-1))
+            logits = model(
+                input_ids=input_ids, attention_mask=attention_mask
+            )  # (b, s, v)
+            batch_logits = logits.view(-1, logits.shape[-1])  # (b * s, v)
+
+            loss = criterion(batch_logits, batch_labels)
             total_loss += loss.item()
 
-            predictions = logits.argmax(dim=-1).squeeze(0).tolist()
-            references = labels.squeeze(0).tolist()
+            # todo: compute allows you to use batches, so maybe make this batched instead
+            # todo:     of iterating through the batches
+            # todo: https://huggingface.co/docs/evaluate/v0.4.0/en/a_quick_tour#compute
+            for i in range(logits.size(0)):  # batch size
+                predictions = logits[i].argmax(dim=-1).tolist()
+                references = labels[i].tolist()
 
-            all_predictions.extend(predictions)
-            all_references.extend(references)
+                # Remove padding and ignore indices from references
+                references = [token for token in references if token != IGNORE_INDEX]
+
+                all_predictions.append(
+                    tokenizer.decode(predictions, skip_special_tokens=True)
+                )
+                all_references.append(
+                    tokenizer.decode(references, skip_special_tokens=True)
+                )
 
     print(f"test loss: {total_loss}")
 
     rouge = load("rouge")
     results = rouge.compute(
-        predictions=[tokenizer.decode(all_predictions)],
-        references=tokenizer.decode(all_references),
+        predictions=all_predictions,
+        references=all_references,
     )
     if results is None:
         print("unable to calculate rouge score")
     else:
         print("rouge scores ->")
-        for key, val in results:
+        for key, val in results.items():
             print(f"\t{key}: {val}")
