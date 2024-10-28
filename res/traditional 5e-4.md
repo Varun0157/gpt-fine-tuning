@@ -1,6 +1,3 @@
-batch size: 16
-lr: 5e-4
-
 num params before freezing:  125198592
 num_params after freezing:  38597376
 epoch 1 -> train loss: 0.5139090285074143, valid loss: 0.4768661274909973 in 1375.092437505722 seconds

@@ -1,9 +1,10 @@
 import time
+from enum import Enum
 
 import torch
 import torch.nn as nn
 from torch.optim import AdamW
-from transformers import GPTNeoForCausalLM
+from transformers import GPTNeoForCausalLM, GPT2Tokenizer
 from evaluate import load
 
 IGNORE_INDEX = -100
@@ -15,7 +16,6 @@ def _train(model, dataloader, criterion, optimizer, accumulation_steps: int = 1)
 
     total_loss = 0
     for step, batch in enumerate(dataloader):
-
         input_ids = batch["input_ids"].to(model.device)
         attention_mask = batch["attention_mask"].to(model.device)
         labels = batch["labels"].to(model.device)
@@ -175,3 +175,16 @@ def get_frozen_model(model_path, device):
         param.requires_grad = False
 
     return model.to(device)
+
+
+def get_tokenizer(tokenizer_path):
+    tokenizer = GPT2Tokenizer.from_pretrained(tokenizer_path)
+    tokenizer.pad_token = tokenizer.eos_token  # Set the pad token to eos_token
+
+    return tokenizer
+
+
+class FineTuningType(Enum):
+    TRADITIONAL = "traditional"
+    SOFT_PROMPTING = "soft_prompting"
+    LORA = "lora"

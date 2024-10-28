@@ -6,7 +6,12 @@ from src.utils import get_frozen_model
 
 class SoftPromptTuning(nn.Module):
     def __init__(
-        self, num_soft_prompts, device, tokenizer, model_path, embedding_dim=768
+        self,
+        device,
+        tokenizer,
+        model_path,
+        num_soft_prompts: int = 12,
+        embedding_dim=768,
     ):
         super(SoftPromptTuning, self).__init__()
         self.num_soft_prompts = num_soft_prompts
