@@ -1,7 +1,7 @@
 import torch.nn as nn
 from peft import LoraConfig, get_peft_model  # type: ignore
 
-from src.utils import get_frozen_model  # type: ignore
+from src.utils import get_frozen_model
 
 
 class LoraTuning(nn.Module):
@@ -11,7 +11,7 @@ class LoraTuning(nn.Module):
         self.gpt2_neo = get_frozen_model(model_path, self.device)
 
         self.lora_config = LoraConfig(
-            r=8,
+            r=8,  # rank of the low-rank approximation
             lora_dropout=0.05,  # dropout for regularization
         )
 

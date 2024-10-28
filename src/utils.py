@@ -69,6 +69,7 @@ def train_and_validate(
     num_epochs=10,
     lr=7.5e-4,
     accumulation_steps: int = 1,
+    patience: int = 2,
 ):
     model.train()
 
@@ -78,6 +79,7 @@ def train_and_validate(
     optimizer = AdamW(model.parameters(), lr=lr)
 
     best_valid_loss = float("inf")
+    num_val_inc_epochs = 0
     for epoch in range(num_epochs):
         start_time = time.time()
         train_loss = _train(
@@ -95,8 +97,14 @@ def train_and_validate(
         )
 
         if valid_loss > best_valid_loss:
-            continue
+            num_val_inc_epochs += 1
+            if num_val_inc_epochs < patience:
+                continue
 
+            print("early stopping")
+            break
+
+        num_val_inc_epochs = 0
         best_valid_loss = valid_loss
         torch.save(model.state_dict(), best_model_path)
         print("\tbest model saved")
@@ -151,12 +159,15 @@ def test(model, tokenizer, test_dataloader):
         predictions=all_predictions,
         references=all_references,
     )
+
+    print()
+
     if results is None:
         print("unable to calculate rouge score")
-    else:
-        print("rouge scores ->")
-        for key, val in results.items():
-            print(f"\t{key}: {val}")
+        return
+    print("rouge scores ->")
+    for key, val in results.items():
+        print(f"\t{key}: {val}")
 
 
 def get_frozen_model(model_path, device):
