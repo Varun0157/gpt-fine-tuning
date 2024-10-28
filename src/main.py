@@ -1,5 +1,6 @@
 import os
 from enum import Enum
+from tkinter.tix import MAX
 
 import torch
 from transformers import GPT2Tokenizer
@@ -14,7 +15,7 @@ MAX_BATCH_IN_MEM = 2
 DESIRED_BATCH_SIZE = 64
 
 assert DESIRED_BATCH_SIZE % MAX_BATCH_IN_MEM == 0
-ACCUMULATION_STEPS = DESIRED_BATCH_SIZE / MAX_BATCH_IN_MEM
+ACCUMULATION_STEPS = DESIRED_BATCH_SIZE // MAX_BATCH_IN_MEM
 
 
 class FineTuningType(Enum):
@@ -23,7 +24,11 @@ class FineTuningType(Enum):
     LORA = "lora"
 
 
-def fine_tune(tuning_type: FineTuningType):
+def fine_tune(tuning_type: FineTuningType, lr: float = 5e-4, num_epochs: int = 10):
+    print(f"learning rate: {lr}")
+    print(f"batch size: {MAX_BATCH_IN_MEM} in mem, {DESIRED_BATCH_SIZE} for optimizer")
+    print()
+
     MODEL_PATH = "./model/model"
     TOKEN_PATH = "./model/tokenizer"
 
@@ -69,7 +74,15 @@ def fine_tune(tuning_type: FineTuningType):
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"number of trainable parameters: {trainable_params}")
 
-    train_and_validate(model, train_loader, valid_dataloader, BEST_MODEL_PATH)
+    train_and_validate(
+        model,
+        train_loader,
+        valid_dataloader,
+        BEST_MODEL_PATH,
+        num_epochs=num_epochs,
+        lr=lr,
+        accumulation_steps=ACCUMULATION_STEPS,
+    )
 
     max_gpu_mb_alloc = torch.cuda.max_memory_allocated() / 1024**2
     print(f"Max GPU memory allocated: {max_gpu_mb_alloc:.2f} MB")
