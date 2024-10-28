@@ -14,11 +14,10 @@ class SoftPrompts(nn.Module):
 
         # Load the pre-trained GPT-Neo model
         self.gpt2_neo = GPTNeoForCausalLM.from_pretrained(model_path)
-        self.gpt2_neo.to(self.device)
-
         # Freeze all layers
         for param in self.gpt2_neo.parameters():
             param.requires_grad = False
+        self.gpt2_neo.to(self.device)
 
         self.soft_prompts = nn.Embedding(self.num_soft_prompts, self.embedding_dim)
 
