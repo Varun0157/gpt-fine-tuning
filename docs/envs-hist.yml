@@ -12,4 +12,5 @@ dependencies:
   - transformers[version='>=3.5']
   - datasets==2.10.0
   - rouge-score
+  - peft
 prefix: /home/varun/miniconda3/envs/anlp-a3

@@ -9,6 +9,7 @@ dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_kmp_llvm
   - absl-py=2.1.0=pyhd8ed1ab_0
+  - accelerate=1.0.1=pyhd8ed1ab_0
   - aiohappyeyeballs=2.4.3=pyhd8ed1ab_0
   - aiohttp=3.10.10=py312h178313f_0
   - aiosignal=1.3.1=pyhd8ed1ab_0
@@ -195,9 +196,11 @@ dependencies:
   - p11-kit=0.24.1=hc5aa10d_0
   - packaging=24.1=pyhd8ed1ab_0
   - pandas=2.2.3=py312hf9745cd_1
+  - peft=0.13.2=pyhd8ed1ab_0
   - pillow=11.0.0=py312h7b63e92_0
   - pip=24.2=pyh8b19718_1
   - propcache=0.2.0=py312h66e93f0_2
+  - psutil=6.1.0=py312h66e93f0_0
   - pthread-stubs=0.4=hb9d3cd8_1002
   - pyarrow=17.0.0=py312h9cebb41_1
   - pyarrow-core=17.0.0=py312h9cafe31_1_cpu
