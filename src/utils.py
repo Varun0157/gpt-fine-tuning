@@ -3,6 +3,7 @@ import time
 import torch
 import torch.nn as nn
 from torch.optim import AdamW
+from transformers import GPTNeoForCausalLM
 
 from evaluate import load
 
@@ -66,7 +67,7 @@ def train_and_validate(
     valid_dataloader,
     best_model_path,
     num_epochs=10,
-    lr=5e-4,
+    lr=7.5e-4,
     accumulation_steps: int = 1,
 ):
     model.train()
@@ -156,3 +157,11 @@ def test(model, tokenizer, test_dataloader):
         print("rouge scores ->")
         for key, val in results.items():
             print(f"\t{key}: {val}")
+
+
+def get_frozen_model(model_path, device):
+    model = GPTNeoForCausalLM.from_pretrained(model_path)
+    for param in model.parameters():
+        param.requires_grad = False
+
+    return model.to(device)

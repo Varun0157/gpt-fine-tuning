@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-from transformers import GPTNeoForCausalLM
+
+from src.utils import get_frozen_model
 
 
 class SoftPromptTuning(nn.Module):
@@ -13,11 +14,7 @@ class SoftPromptTuning(nn.Module):
         self.embedding_dim = embedding_dim
 
         # Load the pre-trained GPT-Neo model
-        self.gpt2_neo = GPTNeoForCausalLM.from_pretrained(model_path)
-        # Freeze all layers
-        for param in self.gpt2_neo.parameters():
-            param.requires_grad = False
-        self.gpt2_neo.to(self.device)
+        self.gpt2_neo = get_frozen_model(model_path, self.device)
 
         self.soft_prompts = nn.Embedding(self.num_soft_prompts, self.embedding_dim)
 

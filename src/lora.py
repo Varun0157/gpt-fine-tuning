@@ -1,16 +1,14 @@
 import torch.nn as nn
-from transformers import GPTNeoForCausalLM
 from peft import LoraConfig, get_peft_model  # type: ignore
+
+from src.utils import get_frozen_model  # type: ignore
 
 
 class LoraTuning(nn.Module):
     def __init__(self, model_path, device):
         super(LoraTuning, self).__init__()
         self.device = device
-        self.gpt2_neo = GPTNeoForCausalLM.from_pretrained(model_path)
-        for param in self.gpt2_neo.parameters():
-            param.requires_grad = False
-        self.gpt2_neo.to(self.device)
+        self.gpt2_neo = get_frozen_model(model_path, self.device)
 
         self.lora_config = LoraConfig(
             r=8,

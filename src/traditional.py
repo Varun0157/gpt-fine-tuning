@@ -1,5 +1,6 @@
 import torch.nn as nn
-from transformers import GPTNeoForCausalLM
+
+from src.utils import get_frozen_model
 
 
 class TraditionalTuning(nn.Module):
@@ -7,13 +8,8 @@ class TraditionalTuning(nn.Module):
         super(TraditionalTuning, self).__init__()
         self.device = device
 
-        # Load the pre-trained GPT-Neo model
-        self.gpt2_neo = GPTNeoForCausalLM.from_pretrained(model_path)
-        self.gpt2_neo.to(self.device)
-
-        # Freeze all layers except the `lm_head`
-        for param in self.gpt2_neo.parameters():
-            param.requires_grad = False
+        # load the pre-trained GPT-Neo model
+        self.gpt2_neo = get_frozen_model(model_path, self.device)
 
         # Only allow the `lm_head` (the output layer) to be fine-tuned
         for param in self.gpt2_neo.lm_head.parameters():
