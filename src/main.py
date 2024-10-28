@@ -46,7 +46,7 @@ def fine_tune(tuning_type: FineTuningType):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if tuning_type == FineTuningType.SOFT_PROMPTING:
         model = SoftPrompts(
-            num_soft_prompts=5,
+            num_soft_prompts=12,
             device=device,
             tokenizer=tokenizer,
             model_path=MODEL_PATH,

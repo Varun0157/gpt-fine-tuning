@@ -25,7 +25,7 @@ def _clean_text(text):
 
 
 class CNNDailyMailDataset(Dataset):
-    def __init__(self, file_path, tokenizer, DatasetType, max_length=192):
+    def __init__(self, file_path, tokenizer, DatasetType, max_length=256):
         if DatasetType == DatasetType.TRAIN:
             num_rows = 10
         elif DatasetType == DatasetType.VALIDATION:
