@@ -4,7 +4,6 @@ import torch
 import torch.nn as nn
 from torch.optim import AdamW
 from transformers import GPTNeoForCausalLM
-
 from evaluate import load
 
 IGNORE_INDEX = -100

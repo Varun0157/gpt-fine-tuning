@@ -1,6 +1,4 @@
-import os
 from enum import Enum
-from tkinter.tix import MAX
 
 import torch
 from transformers import GPT2Tokenizer
