@@ -32,10 +32,6 @@ class SoftPrompts(nn.Module):
 
         self.soft_prompts.weight.data.copy_(init_embeddings.squeeze(0))
 
-        # print the number of trainable parameters
-        trainable_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
-        print(f"number of trainable parameters: {trainable_params}")
-
     def forward(self, input_ids, attention_mask):
         BATCH_SIZE, SEQ_LEN = input_ids.shape
         input_embeddings = self.gpt2_neo.transformer.wte(input_ids)
@@ -61,5 +57,4 @@ class SoftPrompts(nn.Module):
         attention_mask = attention_mask[:, :SEQ_LEN]
 
         outputs = self.gpt2_neo(inputs_embeds=embeddings, attention_mask=attention_mask)
-
         return outputs.logits

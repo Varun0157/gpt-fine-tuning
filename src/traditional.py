@@ -19,9 +19,6 @@ class TraditionalTuning(nn.Module):
         for param in self.gpt2_neo.lm_head.parameters():
             param.requires_grad = True
 
-        trainable_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
-        print(f"number of trainable parameters: {trainable_params}")
-
     def forward(self, input_ids, attention_mask, labels=None):
         input_ids = input_ids.to(self.device)
         attention_mask = attention_mask.to(self.device)

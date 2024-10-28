@@ -61,6 +61,8 @@ def fine_tune(tuning_type: FineTuningType):
         return
 
     model.to(device)
+    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"number of trainable parameters: {trainable_params}")
 
     train_and_validate(model, train_loader, valid_dataloader, BEST_MODEL_PATH)
 
