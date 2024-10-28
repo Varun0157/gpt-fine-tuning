@@ -1,0 +1,26 @@
+num params before freezing:  125198592
+num_params after freezing:  38597376
+epoch 1 -> train loss: 0.5139090285074143, valid loss: 0.4768661274909973 in 1375.092437505722 seconds
+	best model saved
+epoch 2 -> train loss: 0.46183809850329444, valid loss: 0.4690386091073354 in 1365.0854108333588 seconds
+	best model saved
+epoch 3 -> train loss: 0.4456100023133414, valid loss: 0.4676361005306244 in 1364.6896674633026 seconds
+	best model saved
+epoch 4 -> train loss: 0.4326437579109555, valid loss: 0.46856235321362816 in 1364.4285526275635 seconds
+epoch 5 -> train loss: 0.42117781527837117, valid loss: 0.47084618830680847 in 1365.1679301261902 seconds
+epoch 6 -> train loss: 0.41074882041840327, valid loss: 0.47379707598686216 in 1365.6270759105682 seconds
+epoch 7 -> train loss: 0.4011657195999509, valid loss: 0.47723085316022235 in 1365.7360229492188 seconds
+epoch 8 -> train loss: 0.39240284931092034, valid loss: 0.4805036398569743 in 1365.916544675827 seconds
+epoch 9 -> train loss: 0.38428103372028893, valid loss: 0.4841260176499685 in 1367.3649740219116 seconds
+epoch 10 -> train loss: 0.37674079195658366, valid loss: 0.4879643367131551 in 1368.183569431305 seconds
+Max GPU memory allocated: 9368.62 MB
+test loss: 0.4705101030667623
+
+Downloading builder script: 100%
+ 6.27k/6.27k [00:00<00:00, 486kB/s]
+
+rouge scores ->
+	rouge1: 0.1621283886524178
+	rouge2: 0.016802239372869426
+	rougeL: 0.11289600183624159
+	rougeLsum: 0.11287540569650639

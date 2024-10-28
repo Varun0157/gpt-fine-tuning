@@ -2,19 +2,14 @@ import torch.nn as nn
 from transformers import GPTNeoForCausalLM
 
 
-class GPTNeoForSummarization(nn.Module):
-    def __init__(self, device):
-        super(GPTNeoForSummarization, self).__init__()
+class TraditionalTuning(nn.Module):
+    def __init__(self, device, model_path):
+        super(TraditionalTuning, self).__init__()
         self.device = device
 
         # Load the pre-trained GPT-Neo model
-        self.gpt2_neo = GPTNeoForCausalLM.from_pretrained("./model")
+        self.gpt2_neo = GPTNeoForCausalLM.from_pretrained(model_path)
         self.gpt2_neo.to(self.device)
-
-        print(
-            "num params before freezing: ",
-            sum(p.numel() for p in self.gpt2_neo.parameters()),
-        )
 
         # Freeze all layers except the `lm_head`
         for param in self.gpt2_neo.parameters():

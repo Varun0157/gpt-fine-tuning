@@ -64,6 +64,7 @@ def train_and_validate(
     model,
     train_dataloader,
     valid_dataloader,
+    best_model_path,
     num_epochs=10,
     lr=5e-4,
     accumulation_steps: int = 1,
@@ -75,7 +76,6 @@ def train_and_validate(
     # Initialize AdamW optimizer
     optimizer = AdamW(model.parameters(), lr=lr)
 
-    best_model_path = "best_model.pth"
     best_valid_loss = float("inf")
     for epoch in range(num_epochs):
         start_time = time.time()

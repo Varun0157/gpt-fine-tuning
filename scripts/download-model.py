@@ -12,5 +12,5 @@ local_save_path = "./model"
 shutil.rmtree(local_save_path, ignore_errors=True)
 
 # save the model and tokenizer
-tokenizer.save_pretrained(local_save_path)
-model.save_pretrained(local_save_path)
+tokenizer.save_pretrained(local_save_path + "/tokenizer")
+model.save_pretrained(local_save_path + "/model")
