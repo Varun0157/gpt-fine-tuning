@@ -7,7 +7,8 @@ from transformers import GPT2Tokenizer
 from src.data import DatasetType, create_dataloader
 from src.utils import train_and_validate, test
 from src.traditional import TraditionalTuning
-from src.soft_prompting import SoftPrompts
+from src.soft_prompting import SoftPromptTuning
+from src.lora import LoraTuning
 
 MAX_BATCH_IN_MEM = 2
 DESIRED_BATCH_SIZE = 64
@@ -19,6 +20,7 @@ ACCUMULATION_STEPS = DESIRED_BATCH_SIZE / MAX_BATCH_IN_MEM
 class FineTuningType(Enum):
     TRADITIONAL = "traditional"
     SOFT_PROMPTING = "soft_prompting"
+    LORA = "lora"
 
 
 def fine_tune(tuning_type: FineTuningType):
@@ -45,7 +47,7 @@ def fine_tune(tuning_type: FineTuningType):
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     if tuning_type == FineTuningType.SOFT_PROMPTING:
-        model = SoftPrompts(
+        model = SoftPromptTuning(
             num_soft_prompts=12,
             device=device,
             tokenizer=tokenizer,
@@ -56,6 +58,9 @@ def fine_tune(tuning_type: FineTuningType):
     elif tuning_type == FineTuningType.TRADITIONAL:
         model = TraditionalTuning(device=device, model_path=MODEL_PATH)
         BEST_MODEL_PATH = "traditional.pth"
+    elif tuning_type == FineTuningType.LORA:
+        model = LoraTuning(model_path=MODEL_PATH, device=device)
+        BEST_MODEL_PATH = "lora.pth"
     else:
         print("no such fine tuning method")
         return
@@ -84,4 +89,4 @@ def fine_tune(tuning_type: FineTuningType):
 
 
 if __name__ == "__main__":
-    fine_tune(FineTuningType.SOFT_PROMPTING)
+    fine_tune(FineTuningType.LORA)

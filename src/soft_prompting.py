@@ -3,11 +3,11 @@ import torch.nn as nn
 from transformers import GPTNeoForCausalLM
 
 
-class SoftPrompts(nn.Module):
+class SoftPromptTuning(nn.Module):
     def __init__(
         self, num_soft_prompts, device, tokenizer, model_path, embedding_dim=768
     ):
-        super(SoftPrompts, self).__init__()
+        super(SoftPromptTuning, self).__init__()
         self.num_soft_prompts = num_soft_prompts
         self.device = device
         self.embedding_dim = embedding_dim
