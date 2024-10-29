@@ -38,14 +38,6 @@ class SoftPromptTuning(nn.Module):
         BATCH_SIZE, SEQ_LEN = input_ids.shape
         input_embeddings = self.gpt2_neo.transformer.wte(input_ids)
         input_embeddings = input_embeddings.to(self.device)
-        # prepend to the attention mask to account for the soft prompt
-        attention_mask = torch.cat(
-            [
-                torch.ones(BATCH_SIZE, self.num_soft_prompts, device=self.device),
-                attention_mask,
-            ],
-            dim=1,
-        )
 
         soft_prompt_ids = torch.arange(self.num_soft_prompts, device=self.device)
         soft_prompt_embeddings = self.soft_prompts(soft_prompt_ids)
@@ -54,7 +46,15 @@ class SoftPromptTuning(nn.Module):
         )
 
         embeddings = torch.cat([soft_prompt_embeddings, input_embeddings], dim=1)
-        # truncate the embeddings to sequence length
+        # prepending ones so the soft prompts are not ignored
+        attention_mask = torch.cat(
+            [
+                torch.ones(BATCH_SIZE, self.num_soft_prompts, device=self.device),
+                attention_mask,
+            ],
+            dim=1,
+        )
+        # truncate the embeddings and mask to sequence length
         embeddings = embeddings[:, :SEQ_LEN, :]
         attention_mask = attention_mask[:, :SEQ_LEN]
 

@@ -64,3 +64,4 @@ python -m src.test
 - [ ] move the fine-tuning script files to a separate dir
 - [ ] make an abstract class that does the model loading and freezing in the `__init__`, and instructs to return the logits from the `forward` call.
 - [ ] command line arguments for hyper-params   
+- [ ] possible optimisation mentioned in the test of [utils](./src/utils.py)
