@@ -54,9 +54,13 @@ To test the fine-tuned model, pass the path to the checkpoint and the fine tunin
 ```sh
 python -m src.test
 ```
+
+## fine-tuned models
+(wip)
+
 ## todo
 - [ ] clean the data
   - check this: https://github.com/abisee/cnn-dailymail
-- [ ] move the fine-tuning script fails to a separate dir
+- [ ] move the fine-tuning script files to a separate dir
 - [ ] make an abstract class that does the model loading and freezing in the `__init__`, and instructs to return the logits from the `forward` call.
 - [ ] command line arguments for hyper-params   
