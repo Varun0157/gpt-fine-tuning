@@ -66,6 +66,7 @@ To test these models, we can follow the same instructions above for testing.
 - [ ] clean the data
   - check this: https://github.com/abisee/cnn-dailymail
 - [ ] move the fine-tuning script files to a separate dir
-- [ ] make an abstract class that does the model loading and freezing in the `__init__`, and instructs to return the logits from the `forward` call.
+- [ ] make a parent class that does the model loading and freezing in the `__init__`, and instructs to return the logits from the `forward` call (taking input ids and attention mask).
 - [ ] command line arguments for hyper-params   
 - [ ] possible optimisation mentioned in the test of [utils](./src/utils.py)
+- [ ] update with new assignment doc 
