@@ -61,7 +61,7 @@ class CNNDailyMailDataset(Dataset):
             return_tensors="pt",
         )["input_ids"]
 
-        # Replace padding token id's in labels with -100 to ignore them during loss calculation
+        # replace padding token id's in labels with -100 to ignore them during loss calculation
         labels[labels == self.tokenizer.pad_token_id] = IGNORE_INDEX
 
         return {

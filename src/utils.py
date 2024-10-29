@@ -31,8 +31,6 @@ def _train(model, dataloader, criterion, optimizer, accumulation_steps: int = 1)
         total_loss += loss.item()
 
         if (step + 1) % accumulation_steps == 0 or (step + 1) == len(dataloader):
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-
             optimizer.step()
             optimizer.zero_grad()
 
