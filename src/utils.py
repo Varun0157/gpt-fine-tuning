@@ -186,5 +186,5 @@ def get_tokenizer(tokenizer_path):
 
 class FineTuningType(Enum):
     TRADITIONAL = "traditional"
-    SOFT_PROMPTING = "soft_prompting"
+    SOFT_PROMPTS = "soft_prompts"
     LORA = "lora"
