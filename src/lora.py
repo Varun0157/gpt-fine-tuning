@@ -15,7 +15,7 @@ class LoraTuning(nn.Module):
             lora_dropout=0.05,  # dropout for regularization
         )
 
-        self.lora_model = get_peft_model(
+        self.model = get_peft_model(
             model=self.gpt2_neo,
             peft_config=self.lora_config,
         )
@@ -24,5 +24,5 @@ class LoraTuning(nn.Module):
         input_ids = input_ids.to(self.device)
         attention_mask = attention_mask.to(self.device)
 
-        outputs = self.lora_model(input_ids=input_ids, attention_mask=attention_mask)
+        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
         return outputs.logits
