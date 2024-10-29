@@ -21,8 +21,42 @@ Or, include the following packages in your environment:
 - rouge-score
 - peft
 
-## Downloading the model, tokenizer and data
+## downloading the model, tokenizer and data
 
 ### the data
+The data is the [cnn-dailymail dataset on text summarisation](https://www.kaggle.com/datasets/gowrishankarp/newspaper-text-summarization-cnn-dailymail). It can be downloaded locally into the [./data](./data/) directory using:
 
+```sh
+python scripts/download-data.py
+```
 
+### the model and tokenizer 
+The model and corresponding tokenizer of choice is that of [gpt-neo](https://huggingface.co/EleutherAI/gpt-neo-125m). They can be downloaded locally to [./model](./model/) by running:
+
+```sh
+python scripts/download-model.py
+```
+
+## fine tuning
+To choose the type of fine-tuning to train and test on, alter the enumerator passed to the corresponding function in the `main` call of [train](./src/train.py) and [test](./src/test.py) respectively. The hyper-parameters, too, can be altered in the arguments to this call. 
+
+The reason for choosing this rather than command line arguments was to allow easy copying of the scripts over to a Kaggle notebook. 
+
+### training
+To fine-tune the model, run:
+```sh
+python -m src.train
+```
+the fine-tuned checkpoint will be saved to `traditional.pth`, `lora.pth` or `soft_prompts.pth` depending on the fine-tuning method of choice. 
+
+### testing
+To test the fine-tuned model, pass the path to the checkpoint and the fine tuning type enum in the call to the main function in [test](./src/test.py), then run:
+```sh
+python -m src.test
+```
+## todo
+- [ ] clean the data
+  - check this: https://github.com/abisee/cnn-dailymail
+- [ ] move the fine-tuning script fails to a separate dir
+- [ ] make an abstract class that does the model loading and freezing in the `__init__`, and instructs to return the logits from the `forward` call.
+- [ ] command line arguments for hyper-params   
