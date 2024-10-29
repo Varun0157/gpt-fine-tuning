@@ -1,6 +1,8 @@
 # gpt2-fine-tuning
 Advanced NLP (IIIT-H Monsoon '24) Assignment 3
 
+For more details, see the [report](./docs/Report.pdf). 
+
 ## setting up the dependencies
 the `conda` env files are available in [the docs directory](./docs/), with the output of `conda env export` in [envs](./docs/envs.yml) and the result of `conda env export --from-history` in [envs-hist](./docs/envs-hist.yml). 
 
