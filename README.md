@@ -56,7 +56,9 @@ python -m src.test
 ```
 
 ## fine-tuned models
-(wip)
+The loss-per-epoch and loss details can be found in the [res directory](./res/) while the tuned checkpoints themselves can be found in [this drive link](https://drive.google.com/drive/folders/1V3wf21I0HAq0Zu1b4B04rqkJKDBWX0y7?usp=sharing). 
+
+To test these models, we can follow the same instructions above for testing. 
 
 ## todo
 - [ ] clean the data
