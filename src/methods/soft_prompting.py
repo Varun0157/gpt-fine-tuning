@@ -1,9 +1,7 @@
-from pyexpat import model
 import torch
 import torch.nn as nn
 
 from src.methods.general import GeneralTuning
-from src.utils import get_frozen_model
 
 
 class SoftPromptTuning(GeneralTuning):
