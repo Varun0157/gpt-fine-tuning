@@ -1,7 +1,14 @@
+import logging
 import torch
 
 from src.data import DatasetType, create_dataloader
-from src.utils import FineTuningType, get_tokenizer, get_tuned_model_path, test
+from src.utils import (
+    FineTuningType,
+    get_logging_format,
+    get_tokenizer,
+    get_tuned_model_path,
+    test,
+)
 from src.methods.traditional import TraditionalTuning
 from src.methods.soft_prompting import SoftPromptTuning
 from src.methods.lora import LoraTuning
@@ -31,7 +38,7 @@ def test_tuned_model(tuning_type: FineTuningType, batch_size: int):
     elif tuning_type == FineTuningType.LORA:
         model = LoraTuning(model_path=MODEL_PATH, device=device)
     else:
-        print("no such fine tuning method")
+        logging.warning("no such fine tuning method")
         return
     model.to(device)
 
@@ -43,6 +50,8 @@ def test_tuned_model(tuning_type: FineTuningType, batch_size: int):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format=get_logging_format())
+
     import argparse
 
     parser = argparse.ArgumentParser(description="Fine-tune a model")

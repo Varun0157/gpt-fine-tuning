@@ -2,6 +2,7 @@ import os
 import time
 from enum import Enum
 from typing import Tuple
+import logging
 
 import torch
 import torch.nn as nn
@@ -93,7 +94,7 @@ def train_and_validate(
         valid_loss = _validate(model, valid_dataloader, criterion)
         end_time = time.time()
 
-        print(
+        logging.info(
             f"epoch {epoch + 1} -> train loss: {train_loss}, valid loss: {valid_loss} in {end_time - start_time} seconds"
         )
 
@@ -108,7 +109,7 @@ def train_and_validate(
         num_val_inc_epochs = 0
         best_valid_loss = valid_loss
         torch.save(model.state_dict(), best_model_path)
-        print("\tmodel saved")
+        logging.info("\tmodel saved")
 
 
 def test(model, tokenizer, test_dataloader):
@@ -153,7 +154,7 @@ def test(model, tokenizer, test_dataloader):
                 )
 
     NUM_SAMPLES = len(test_dataloader.dataset)
-    print(f"test loss: {total_loss / NUM_SAMPLES}")
+    logging.info(f"test loss: {total_loss / NUM_SAMPLES}")
 
     rouge = load("rouge")
     results = rouge.compute(
@@ -164,11 +165,11 @@ def test(model, tokenizer, test_dataloader):
     print()
 
     if results is None:
-        print("unable to calculate rouge score")
+        logging.warning("unable to calculate rouge score")
         return
-    print("rouge scores ->")
+    logging.info("rouge scores ->")
     for key, val in results.items():
-        print(f"\t{key}: {val}")
+        logging.info(f"\t{key}: {val}")
 
 
 def get_frozen_model(model_path, device):
@@ -201,3 +202,7 @@ def get_base_paths() -> Tuple[str, str]:
     tokenizer_path = os.path.join("model", "tokenizer")
 
     return model_path, tokenizer_path
+
+
+def get_logging_format() -> str:
+    return "%(asctime)s - %(levelname)s : %(message)s"

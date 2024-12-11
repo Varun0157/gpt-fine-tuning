@@ -1,9 +1,11 @@
 import torch
-from transformers import GPT2Tokenizer
+import logging
+from tqdm import tqdm
 
 from src.data import DatasetType, create_dataloader
 from src.utils import (
     get_base_paths,
+    get_logging_format,
     get_tuned_model_path,
     get_tokenizer,
     train_and_validate,
@@ -22,8 +24,10 @@ ACCUMULATION_STEPS = DESIRED_BATCH_SIZE // MAX_BATCH_IN_MEM
 
 
 def fine_tune(tuning_type: FineTuningType, lr: float = 5e-4, num_epochs: int = 10):
-    print(f"learning rate: {lr}")
-    print(f"batch size: {MAX_BATCH_IN_MEM} in mem, {DESIRED_BATCH_SIZE} for optimizer")
+    logging.info(f"learning rate: {lr}")
+    logging.info(
+        f"batch size: {MAX_BATCH_IN_MEM} in mem, {DESIRED_BATCH_SIZE} for optimizer"
+    )
     print()
 
     MODEL_PATH, TOKEN_PATH = get_base_paths()
@@ -57,13 +61,13 @@ def fine_tune(tuning_type: FineTuningType, lr: float = 5e-4, num_epochs: int = 1
     elif tuning_type == FineTuningType.LORA:
         model = LoraTuning(device=device, model_path=MODEL_PATH)
     else:
-        print("no such fine tuning method")
+        logging.warning("no such fine tuning method")
         return
     BEST_MODEL_PATH = get_tuned_model_path(tuning_type)
 
     model.to(device)
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"number of trainable parameters: {trainable_params}")
+    logging.info(f"number of trainable parameters: {trainable_params}")
 
     train_and_validate(
         model,
@@ -76,14 +80,19 @@ def fine_tune(tuning_type: FineTuningType, lr: float = 5e-4, num_epochs: int = 1
     )
 
     max_gpu_mb_alloc = torch.cuda.max_memory_allocated() / 1024**2
-    print(f"Max GPU memory allocated: {max_gpu_mb_alloc:.2f} MB")
-    # torch.cuda.reset_peak_memory_stats() also exists, may be useful
+    logging.info(f"Max GPU memory allocated: {max_gpu_mb_alloc:.2f} MB")
+    # NOTE: torch.cuda.reset_peak_memory_stats() also exists, may be useful
 
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format=get_logging_format(),
+    )
+
     import argparse
 
-    parser = argparse.ArgumentParser(description="Fine-tune a model")
+    parser = argparse.ArgumentParser(description="fine-tune gpt-neo")
     parser.add_argument(
         "--fine_tuning_type",
         type=str,
