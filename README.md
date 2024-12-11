@@ -1,5 +1,5 @@
 # gpt2-fine-tuning
-Advanced NLP (IIIT-H Monsoon '24) Assignment 3
+*Assignment 3* of *Advanced Natural Language Processing* in IIIT-Hyderabad, Monsoon '24. 
 
 For more details, see the [report](./docs/Report.pdf). 
 
@@ -63,10 +63,9 @@ The loss-per-epoch and loss details can be found in the [res directory](./res/) 
 To test these models, we can follow the same instructions above for testing. 
 
 ## todo
+- [ ] mention all the fancy stuff done for mem efficiency and all 
 - [ ] clean the data
   - check this: https://github.com/abisee/cnn-dailymail
-- [ ] move the fine-tuning script files to a separate dir
 - [ ] make a parent class that does the model loading and freezing in the `__init__`, and instructs to return the logits from the `forward` call (taking input ids and attention mask).
-- [ ] command line arguments for hyper-params   
 - [ ] possible optimisation mentioned in the test of [utils](./src/utils.py)
 - [ ] update with new assignment doc 

@@ -1,15 +1,13 @@
 import torch
 
 from src.data import DatasetType, create_dataloader
-from src.utils import FineTuningType, get_tokenizer, test
-from src.traditional import TraditionalTuning
-from src.soft_prompting import SoftPromptTuning
-from src.lora import LoraTuning
+from src.utils import FineTuningType, get_tokenizer, get_tuned_model_path, test
+from src.methods.traditional import TraditionalTuning
+from src.methods.soft_prompting import SoftPromptTuning
+from src.methods.lora import LoraTuning
 
 
-def test_tuned_model(
-    checkpoint_path: str, batch_size: int, tuning_type: FineTuningType
-):
+def test_tuned_model(tuning_type: FineTuningType, batch_size: int):
     MODEL_PATH = "./model/model"
     TOKEN_PATH = "./model/tokenizer"
     tokenizer = get_tokenizer(TOKEN_PATH)
@@ -37,6 +35,7 @@ def test_tuned_model(
         return
     model.to(device)
 
+    checkpoint_path = get_tuned_model_path(tuning_type)
     checkpoint = torch.load(checkpoint_path, weights_only=True)
     model.load_state_dict(checkpoint)
 
@@ -44,4 +43,16 @@ def test_tuned_model(
 
 
 if __name__ == "__main__":
-    test_tuned_model("lora.pth", 2, FineTuningType.LORA)
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Fine-tune a model")
+    parser.add_argument(
+        "--fine_tuning_type",
+        type=str,
+        required=True,
+        choices=[t.value for t in FineTuningType],
+        help="type of fine-tuning",
+    )
+    args = parser.parse_args()
+
+    test_tuned_model(FineTuningType(args.fine_tuning_type), 2)

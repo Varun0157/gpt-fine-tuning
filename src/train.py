@@ -2,10 +2,17 @@ import torch
 from transformers import GPT2Tokenizer
 
 from src.data import DatasetType, create_dataloader
-from src.utils import get_tokenizer, train_and_validate, test, FineTuningType
-from src.traditional import TraditionalTuning
-from src.soft_prompting import SoftPromptTuning
-from src.lora import LoraTuning
+from src.utils import (
+    get_base_paths,
+    get_tuned_model_path,
+    get_tokenizer,
+    train_and_validate,
+    test,
+    FineTuningType,
+)
+from src.methods.traditional import TraditionalTuning
+from src.methods.soft_prompting import SoftPromptTuning
+from src.methods.lora import LoraTuning
 
 MAX_BATCH_IN_MEM = 2
 DESIRED_BATCH_SIZE = 64
@@ -19,8 +26,7 @@ def fine_tune(tuning_type: FineTuningType, lr: float = 5e-4, num_epochs: int = 1
     print(f"batch size: {MAX_BATCH_IN_MEM} in mem, {DESIRED_BATCH_SIZE} for optimizer")
     print()
 
-    MODEL_PATH = "./model/model"
-    TOKEN_PATH = "./model/tokenizer"
+    MODEL_PATH, TOKEN_PATH = get_base_paths()
 
     # Initialize tokenizer
     tokenizer = get_tokenizer(TOKEN_PATH)
@@ -46,16 +52,14 @@ def fine_tune(tuning_type: FineTuningType, lr: float = 5e-4, num_epochs: int = 1
             tokenizer=tokenizer,
             model_path=MODEL_PATH,
         )
-        BEST_MODEL_PATH = "soft_prompts.pth"
     elif tuning_type == FineTuningType.TRADITIONAL:
         model = TraditionalTuning(device=device, model_path=MODEL_PATH)
-        BEST_MODEL_PATH = "traditional.pth"
     elif tuning_type == FineTuningType.LORA:
-        model = LoraTuning(model_path=MODEL_PATH, device=device)
-        BEST_MODEL_PATH = "lora.pth"
+        model = LoraTuning(device=device, model_path=MODEL_PATH)
     else:
         print("no such fine tuning method")
         return
+    BEST_MODEL_PATH = get_tuned_model_path(tuning_type)
 
     model.to(device)
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -77,4 +81,16 @@ def fine_tune(tuning_type: FineTuningType, lr: float = 5e-4, num_epochs: int = 1
 
 
 if __name__ == "__main__":
-    fine_tune(FineTuningType.LORA)
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Fine-tune a model")
+    parser.add_argument(
+        "--fine_tuning_type",
+        type=str,
+        required=True,
+        choices=[t.value for t in FineTuningType],
+        help="type of fine-tuning",
+    )
+    args = parser.parse_args()
+
+    fine_tune(FineTuningType(args.fine_tuning_type))

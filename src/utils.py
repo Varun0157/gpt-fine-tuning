@@ -1,5 +1,7 @@
+import os
 import time
 from enum import Enum
+from typing import Tuple
 
 import torch
 import torch.nn as nn
@@ -106,7 +108,7 @@ def train_and_validate(
         num_val_inc_epochs = 0
         best_valid_loss = valid_loss
         torch.save(model.state_dict(), best_model_path)
-        print("\tbest model saved")
+        print("\tmodel saved")
 
 
 def test(model, tokenizer, test_dataloader):
@@ -188,3 +190,14 @@ class FineTuningType(Enum):
     TRADITIONAL = "traditional"
     SOFT_PROMPTS = "soft_prompts"
     LORA = "lora"
+
+
+def get_tuned_model_path(type: FineTuningType) -> str:
+    return os.path.join("res", f"{type.value}.pth")
+
+
+def get_base_paths() -> Tuple[str, str]:
+    model_path = os.path.join("model", "model")
+    tokenizer_path = os.path.join("model", "tokenizer")
+
+    return model_path, tokenizer_path
