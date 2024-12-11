@@ -57,9 +57,7 @@ python scripts/download-model.py
 ```
 
 ## fine tuning
-To choose the type of fine-tuning to train and test on, alter the enumerator passed to the corresponding function in the `main` call of [train](./src/train.py) and [test](./src/test.py) respectively. The hyper-parameters, too, can be altered in the arguments to this call. 
-
-The reason for choosing this rather than command line arguments was to allow easy copying of the scripts over to a Kaggle notebook. 
+Choose the method of fine tuning using the `--fine_tuning_type` cli argument. Hyperparameters can be modified directly in the code. 
 
 ### training
 To fine-tune the model, run:
@@ -69,7 +67,7 @@ python -m src.train --fine_tuning_type <type>
 the fine-tuned checkpoint will be saved to `traditional.pth`, `lora.pth` or `soft_prompts.pth` depending on the fine-tuning method of choice. 
 
 ### testing
-To test the fine-tuned model, pass the path to the checkpoint and the fine tuning type enum in the call to the main function in [test](./src/test.py), then run:
+To test the fine-tuned model, pass the fine tuning type as a command line argument:
 ```sh
 python -m src.test --fine_tuning_type <type>
 ```
@@ -81,3 +79,4 @@ To test these models, we can follow the same instructions above for testing.
 
 ## todo
 - [ ] possible optimisation mentioned in the test of [utils](./src/utils.py)
+- [ ] re-run models and save in drive - change in model structure could lead to issues while loading 
