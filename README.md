@@ -66,5 +66,4 @@ To test these models, we can follow the same instructions above for testing.
 - [ ] mention all the fancy stuff done for mem efficiency and all 
 - [ ] clean the data
   - check this: https://github.com/abisee/cnn-dailymail
-- [ ] make a parent class that does the model loading and freezing in the `__init__`, and instructs to return the logits from the `forward` call (taking input ids and attention mask).
 - [ ] possible optimisation mentioned in the test of [utils](./src/utils.py)
