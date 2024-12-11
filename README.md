@@ -80,3 +80,4 @@ To test these models, we can follow the same instructions above for testing.
 ## todo
 - [ ] possible optimisation mentioned in the test of [utils](./src/utils.py)
 - [ ] re-run models and save in drive - change in model structure could lead to issues while loading 
+- [ ] stop saving models locally, let hf cache handle it. Cleaner. 
