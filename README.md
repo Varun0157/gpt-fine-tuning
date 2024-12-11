@@ -1,14 +1,29 @@
 # gpt2-fine-tuning
 *Assignment 3* of *Advanced Natural Language Processing* in IIIT-Hyderabad, Monsoon '24. 
 
-For more details, see the [report](./docs/Report.pdf). 
+Implementing three fine-tuning methods on the summarisation task using the gpt-neo (125M) model, in particular - prompt tuning usnig soft prompts, LoRA, and traditional fine tuning using only the last classifier layer of the model.
+
+In addition, gradient accumulation has been implemented in order to effectively increase the batch size without requiring additional memory. 
+
+For more details including performance comparisons, see the [report](./docs/Report.pdf). 
+
+## details 
+
+### prompt tuning 
+Prepend soft prompt tokens to our input sequences and backpropogate only throughthe soft prompt embeddings,keeping the gpt-neo parameters frozen. We initialise with tokens of the form "SUMMARIZE". 
+
+### LoRA Fine Tuning 
+Implement LoRA by adding low-rank matrices wherever possible to adapt th gpt-neo parameters efficiently. We use in-built libraries for this. 
+
+### Traditional Fine Tuning (last layers only)
+Fine tune only the last few layers of the gpt-neo model. 
 
 ## setting up the dependencies
 the `conda` env files are available in [the docs directory](./docs/), with the output of `conda env export` in [envs](./docs/envs.yml) and the result of `conda env export --from-history` in [envs-hist](./docs/envs-hist.yml). 
 
 You may set up your environment by using:
 ```sh
-conda env create -f docs/envs-hist.yml
+conda env create -f docs/envs.yml
 ```
 
 Or, include the following packages in your environment:
@@ -22,6 +37,8 @@ Or, include the following packages in your environment:
 - datasets==2.10.0
 - rouge-score
 - peft
+
+The dependencies exported from history [are also available](./docs/envs-hist.yml). 
 
 ## downloading the model, tokenizer and data
 
@@ -47,14 +64,14 @@ The reason for choosing this rather than command line arguments was to allow eas
 ### training
 To fine-tune the model, run:
 ```sh
-python -m src.train
+python -m src.train --fine_tuning_type <type>
 ```
 the fine-tuned checkpoint will be saved to `traditional.pth`, `lora.pth` or `soft_prompts.pth` depending on the fine-tuning method of choice. 
 
 ### testing
 To test the fine-tuned model, pass the path to the checkpoint and the fine tuning type enum in the call to the main function in [test](./src/test.py), then run:
 ```sh
-python -m src.test
+python -m src.test --fine_tuning_type <type>
 ```
 
 ## fine-tuned models
@@ -63,7 +80,4 @@ The loss-per-epoch and loss details can be found in the [res directory](./res/) 
 To test these models, we can follow the same instructions above for testing. 
 
 ## todo
-- [ ] mention all the fancy stuff done for mem efficiency and all 
-- [ ] clean the data
-  - check this: https://github.com/abisee/cnn-dailymail
 - [ ] possible optimisation mentioned in the test of [utils](./src/utils.py)
