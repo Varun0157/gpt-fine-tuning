@@ -1,6 +1,5 @@
 import torch
 import logging
-from tqdm import tqdm
 
 from src.data import DatasetType, create_dataloader
 from src.utils import (
@@ -9,7 +8,6 @@ from src.utils import (
     get_tuned_model_path,
     get_tokenizer,
     train_and_validate,
-    test,
     FineTuningType,
 )
 from src.methods.traditional import TraditionalTuning
