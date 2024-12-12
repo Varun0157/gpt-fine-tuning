@@ -31,12 +31,12 @@ def test_tuned_model(tuning_type: FineTuningType, batch_size: int):
         model = SoftPromptTuning(
             device=device,
             tokenizer=tokenizer,
-            model_path=MODEL_PATH,
+            model_name=MODEL_PATH,
         )
     elif tuning_type == FineTuningType.TRADITIONAL:
-        model = TraditionalTuning(device=device, model_path=MODEL_PATH)
+        model = TraditionalTuning(device=device, model_name=MODEL_PATH)
     elif tuning_type == FineTuningType.LORA:
-        model = LoraTuning(model_path=MODEL_PATH, device=device)
+        model = LoraTuning(model_name=MODEL_PATH, device=device)
     else:
         logging.warning("no such fine tuning method")
         return

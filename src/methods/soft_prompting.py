@@ -9,11 +9,11 @@ class SoftPromptTuning(GeneralTuning):
         self,
         device,
         tokenizer,
-        model_path,
+        model_name,
         num_soft_prompts: int = 12,
         embedding_dim=768,
     ):
-        super().__init__(model_path, device)
+        super().__init__(model_name, device)
 
         self.num_soft_prompts = num_soft_prompts
         self.embedding_dim = embedding_dim

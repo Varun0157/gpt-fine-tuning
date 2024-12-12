@@ -3,7 +3,7 @@ import logging
 
 from src.data import DatasetType, create_dataloader
 from src.utils import (
-    get_base_paths,
+    get_base_model,
     get_logging_format,
     get_tuned_model_path,
     get_tokenizer,
@@ -28,10 +28,10 @@ def fine_tune(tuning_type: FineTuningType, lr: float = 5e-4, num_epochs: int = 1
     )
     print()
 
-    MODEL_PATH, TOKEN_PATH = get_base_paths()
+    MODEL_NAME = get_base_model()
 
     # Initialize tokenizer
-    tokenizer = get_tokenizer(TOKEN_PATH)
+    tokenizer = get_tokenizer(MODEL_NAME)
 
     # Example usage for train loader
     train_loader = create_dataloader(
@@ -52,12 +52,12 @@ def fine_tune(tuning_type: FineTuningType, lr: float = 5e-4, num_epochs: int = 1
         model = SoftPromptTuning(
             device=device,
             tokenizer=tokenizer,
-            model_path=MODEL_PATH,
+            model_name=MODEL_NAME,
         )
     elif tuning_type == FineTuningType.TRADITIONAL:
-        model = TraditionalTuning(device=device, model_path=MODEL_PATH)
+        model = TraditionalTuning(device=device, model_name=MODEL_NAME)
     elif tuning_type == FineTuningType.LORA:
-        model = LoraTuning(device=device, model_path=MODEL_PATH)
+        model = LoraTuning(device=device, model_name=MODEL_NAME)
     else:
         logging.warning("no such fine tuning method")
         return

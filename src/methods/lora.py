@@ -4,8 +4,8 @@ from src.methods.general import GeneralTuning
 
 
 class LoraTuning(GeneralTuning):
-    def __init__(self, model_path, device):
-        super().__init__(model_path, device)
+    def __init__(self, model_name, device):
+        super().__init__(model_name, device)
 
         self.lora_config = LoraConfig(
             r=8,  # rank of the low-rank approximation

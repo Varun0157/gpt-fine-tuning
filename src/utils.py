@@ -172,8 +172,8 @@ def test(model, tokenizer, test_dataloader):
         logging.info(f"\t{key}: {val}")
 
 
-def get_frozen_model(model_path, device):
-    model = GPTNeoForCausalLM.from_pretrained(model_path)
+def get_frozen_model(model_name, device):
+    model = GPTNeoForCausalLM.from_pretrained(model_name)
     for param in model.parameters():
         param.requires_grad = False
 
@@ -197,11 +197,8 @@ def get_tuned_model_path(type: FineTuningType) -> str:
     return os.path.join("res", f"{type.value}.pth")
 
 
-def get_base_paths() -> Tuple[str, str]:
-    model_path = os.path.join("model", "model")
-    tokenizer_path = os.path.join("model", "tokenizer")
-
-    return model_path, tokenizer_path
+def get_base_model() -> str:
+    return "EleutherAI/gpt-neo-125m"
 
 
 def get_logging_format() -> str:

@@ -2,8 +2,8 @@ from src.methods.general import GeneralTuning
 
 
 class TraditionalTuning(GeneralTuning):
-    def __init__(self, device, model_path):
-        super().__init__(model_path, device)
+    def __init__(self, device, model_name):
+        super().__init__(model_name, device)
         # Only allow the `lm_head` (the output layer) to be fine-tuned
         for param in self.gpt_neo.lm_head.parameters():
             param.requires_grad = True
