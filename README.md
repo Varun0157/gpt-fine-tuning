@@ -49,13 +49,6 @@ The data is the [cnn-dailymail dataset on text summarisation](https://www.kaggle
 python scripts/download-data.py
 ```
 
-### the model and tokenizer 
-The model and corresponding tokenizer of choice is that of [gpt-neo](https://huggingface.co/EleutherAI/gpt-neo-125m). They can be downloaded locally to [./model](./model/) by running:
-
-```sh
-python scripts/download-model.py
-```
-
 ## fine tuning
 Choose the method of fine tuning using the `--fine_tuning_type` cli argument. Hyperparameters can be modified directly in the code. 
 
