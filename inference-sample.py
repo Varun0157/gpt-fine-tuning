@@ -1,47 +1,57 @@
+import re
 import torch
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
-import torch.nn as nn
+from transformers import GPT2Tokenizer
+from src.methods.soft_prompting import SoftPromptTuning  
 
 
-class SoftPromptTuning:
-    def __init__(self, base_model_name="gpt2", soft_prompt_path="/data4/ayush/prompt_tune/res/soft_prompts.pth", num_soft_prompts=12):
+class SoftPromptTester:
+    def __init__(self, base_model_name="EleutherAI/gpt-neo-125M", soft_prompt_path="res/soft_prompts.pth"):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-        # Load GPT-2 model and tokenizer
         self.tokenizer = GPT2Tokenizer.from_pretrained(base_model_name)
         self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.model = GPT2LMHeadModel.from_pretrained(base_model_name).to(self.device)
 
-        # Load soft prompts
-        self.num_soft_prompts = num_soft_prompts
-        self.embedding_dim = self.model.config.hidden_size
-        self.soft_prompts = nn.Embedding(self.num_soft_prompts, self.embedding_dim).to(self.device)
-        self.load_soft_prompts(soft_prompt_path)
+        self.model = SoftPromptTuning(
+            device=self.device,
+            tokenizer=self.tokenizer,
+            model_name=base_model_name,
+        )
+        self.load_soft_prompts(soft_prompt_path)  
+        self.model.to(self.device)
+        self.model.eval()  # Set the model to evaluation mode
 
     def load_soft_prompts(self, path):
-        """Load the trained soft prompt weights."""
         checkpoint = torch.load(path, map_location=self.device)
-        self.soft_prompts.weight.data.copy_(checkpoint['soft_prompts.weight'])
-        print("Soft prompts loaded successfully.")
+        if "soft_prompts.weight" in checkpoint:
+            self.model.soft_prompts.weight.data.copy_(checkpoint["soft_prompts.weight"])
+            print("Soft prompts loaded successfully.")
+        else:
+            raise KeyError("Key 'soft_prompts.weight' not found in checkpoint.")
+
+    def clean_generated_text(self, text):
+        """Remove unwanted Markdown-like characters from the generated text."""
+        # Remove Markdown headers and asterisks
+        text = re.sub(r"^[#*]+", "", text, flags=re.MULTILINE)  
+        text = re.sub(r"\*+", "", text)  
+        return text.strip()
 
     def generate_summary(self, text, max_summary_tokens=150):
-        """Generate a summary using the soft prompt model."""
+        """Generate a summary using the loaded soft prompt model."""
         # Tokenize input text
-        input_ids = self.tokenizer.encode(text, return_tensors="pt", max_length=1024, truncation=True).to(self.device)
+        input_ids = self.tokenizer.encode(
+            text, return_tensors="pt", max_length=1024, truncation=True
+        ).to(self.device)
 
-        # Get embeddings for input tokens
-        input_embeds = self.model.transformer.wte(input_ids)
-
-        # Add soft prompts to input embeddings
-        soft_prompt_ids = torch.arange(self.num_soft_prompts, device=self.device)
-        soft_prompt_embeds = self.soft_prompts(soft_prompt_ids).unsqueeze(0)
+        # Prepend soft prompts to input embeddings
+        soft_prompt_ids = torch.arange(self.model.num_soft_prompts, device=self.device)
+        soft_prompt_embeds = self.model.soft_prompts(soft_prompt_ids).unsqueeze(0)
+        input_embeds = self.model.gpt_neo.transformer.wte(input_ids)
         inputs_embeds = torch.cat([soft_prompt_embeds, input_embeds], dim=1)
 
         # Adjust attention mask to include soft prompts
         attention_mask = torch.ones(inputs_embeds.size()[:-1], device=self.device)
 
-        # Generate summary
-        outputs = self.model.generate(
+        # Generate summary using `model.gpt_neo.generate`
+        outputs = self.model.gpt_neo.generate(
             inputs_embeds=inputs_embeds,
             attention_mask=attention_mask,
             max_new_tokens=max_summary_tokens,
@@ -49,31 +59,30 @@ class SoftPromptTuning:
             length_penalty=1.5,
             no_repeat_ngram_size=3,
             early_stopping=True,
-            pad_token_id=self.tokenizer.eos_token_id
+            pad_token_id=self.tokenizer.eos_token_id,
         )
 
-        # Decode and return the summary
+        # Decode and clean the summary
         summary = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        return summary.strip()
+        return self.clean_generated_text(summary)
 
 
-# Example Usage
+
 if __name__ == "__main__":
-    # Initialize the soft prompt tuning model
-    soft_prompt_model = SoftPromptTuning(
-        base_model_name="gpt2",
-        soft_prompt_path="/data4/ayush/prompt_tune/res/soft_prompts.pth",
-        num_soft_prompts=12
+    # Initialize the tester
+    tester = SoftPromptTester(
+        base_model_name="EleutherAI/gpt-neo-125M",
+        soft_prompt_path="res/soft_prompts.pth"
     )
 
-    # Test paragraph
+    # New test paragraph
     test_paragraph = """
-    A student has admitted to hanging a noose made of rope from a tree near a student union, university officials said Thursday. The prestigious private school didn't identify the student, citing federal privacy laws. In a news release, it said the student was no longer on campus and will face student conduct review. The student was identified during an investigation by campus police and the office of student affairs and admitted to placing the noose on the tree early Wednesday, the university said. Officials are still trying to determine if other people were involved. Criminal investigations into the incident are ongoing as well. Students and faculty members marched Wednesday afternoon chanting "We are not afraid. We stand together," after pictures of the noose were passed around on social media. At a forum held on the steps of Duke Chapel, close to where the noose was discovered at 2 a.m., hundreds of people gathered. "You came here for the reason that you want to say with me, 'This is no Duke we will accept. This is no Duke we want. This is not the Duke we're here to experience. And this is not the Duke we're here to create,' " Duke President Richard Brodhead told the crowd. The incident is one of several recent racist events to affect college students. Last month a fraternity at the University of Oklahoma had its charter removed after a video surfaced showing members using the N-word and referring to lynching in a chant. Two students were expelled. In February, a noose was hung around the neck of a statue of a famous civil rights figure at the University of Mississippi. A statement issued by Duke said there was a previous report of hate speech directed at students on campus. In the news release, the vice president for student affairs called the noose incident a "cowardly act." "To whomever committed this hateful and stupid act, I just want to say that if your intent was to create fear, it will have the opposite effect," Larry Moneta said Wednesday. Duke University is a private college with about 15,000 students in Durham, North Carolina. CNN's Dave Alsup contributed to this report.
+   If you're famous and performing the American national anthem, be prepared to become a national hero or a national disgrace. Facts are facts. Just ask Vince, Whitney, Roseanne, Jimi and Michael. Mötley Crüe's Vince Neil reminded us again this week of the dangers of tackling "The Star-Spangled Banner." Sure, he can shred it on "Girls, Girls, Girls" and "Dr. Feelgood," but this is a different story -- a completely different story. To say Neil butchered the song before the Las Vegas Outlaws Arena Football League game would be unkind to those in the profession. There's less carnage when butchers are done with their work. The late Whitney Houston set the modern standard for the national anthem at Super Bowl XXV. In the early stages of the Gulf War in 1991, a patriotic America saluted her performance. Just six months earlier, comedian Roseanne Barr may have established the low-water mark. The crowd at the San Diego Padres game booed her rendition and President George H. W. Bush called it "disgraceful." There's nothing quite like getting the presidential thumbs down. One of the most controversial and beloved versions of "The Star-Spangled Banner" comes from 1969. Guitar slinger Jimi Hendrix inflamed mainstream America with his psychedelic take on the national anthem to the delight of the Woodstock generation. And then there's Michael Bolton's version. Overly wrought songs are his specialty and he doesn't disappoint in that department when he sings at the American League Championship Series in 2003. Bolton belts it out, but there's one little problem -- the words. Can anyone say crib notes?
     """
 
     # Generate summary
     print("Generating summary...")
-    summary = soft_prompt_model.generate_summary(test_paragraph, max_summary_tokens=150)
+    summary = tester.generate_summary(test_paragraph, max_summary_tokens=150)
     print("\nOriginal Paragraph:")
     print(test_paragraph)
     print("\nGenerated Summary:")
