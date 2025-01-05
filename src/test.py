@@ -4,6 +4,7 @@ import torch
 from src.data import DatasetType, create_dataloader
 from src.utils import (
     FineTuningType,
+    get_base_model,
     get_logging_format,
     get_tokenizer,
     get_tuned_model_path,
@@ -15,9 +16,8 @@ from src.methods.lora import LoraTuning
 
 
 def test_tuned_model(tuning_type: FineTuningType, batch_size: int):
-    MODEL_PATH = "./model/model"
-    TOKEN_PATH = "./model/tokenizer"
-    tokenizer = get_tokenizer(TOKEN_PATH)
+    MODEL_NAME = get_base_model()
+    tokenizer = get_tokenizer(MODEL_NAME)
 
     test_dataloader = create_dataloader(
         "./data/cnn_dailymail/test.csv",
@@ -31,15 +31,13 @@ def test_tuned_model(tuning_type: FineTuningType, batch_size: int):
         model = SoftPromptTuning(
             device=device,
             tokenizer=tokenizer,
-            model_name=MODEL_PATH,
+            model_name=MODEL_NAME,
         )
     elif tuning_type == FineTuningType.TRADITIONAL:
-        model = TraditionalTuning(device=device, model_name=MODEL_PATH)
+        model = TraditionalTuning(device=device, model_name=MODEL_NAME)
     elif tuning_type == FineTuningType.LORA:
-        model = LoraTuning(model_name=MODEL_PATH, device=device)
-    else:
-        logging.warning("no such fine tuning method")
-        return
+        model = LoraTuning(model_name=MODEL_NAME, device=device)
+
     model.to(device)
 
     checkpoint_path = get_tuned_model_path(tuning_type)
