@@ -1,7 +1,6 @@
 import os
 import time
 from enum import Enum
-from typing import Tuple
 import logging
 
 import torch
