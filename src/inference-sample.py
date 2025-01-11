@@ -1,21 +1,27 @@
+import os
 import re
+
 import torch
-from transformers import GPT2Tokenizer
-from src.methods.soft_prompting import SoftPromptTuning  
+
+from src.methods.soft_prompting import SoftPromptTuning
+from src.utils import get_tokenizer
 
 
 class SoftPromptTester:
-    def __init__(self, base_model_name="EleutherAI/gpt-neo-125M", soft_prompt_path="res/soft_prompts.pth"):
+    def __init__(
+        self,
+        base_model_name="EleutherAI/gpt-neo-125M",
+        soft_prompt_path=os.path.join("res", "soft_prompts.pth"),
+    ):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.tokenizer = GPT2Tokenizer.from_pretrained(base_model_name)
-        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.tokenizer = get_tokenizer(base_model_name)
 
         self.model = SoftPromptTuning(
             device=self.device,
             tokenizer=self.tokenizer,
             model_name=base_model_name,
         )
-        self.load_soft_prompts(soft_prompt_path)  
+        self.load_soft_prompts(soft_prompt_path)
         self.model.to(self.device)
         self.model.eval()  # Set the model to evaluation mode
 
@@ -30,8 +36,8 @@ class SoftPromptTester:
     def clean_generated_text(self, text):
         """Remove unwanted Markdown-like characters from the generated text."""
         # Remove Markdown headers and asterisks
-        text = re.sub(r"^[#*]+", "", text, flags=re.MULTILINE)  
-        text = re.sub(r"\*+", "", text)  
+        text = re.sub(r"^[#*]+", "", text, flags=re.MULTILINE)
+        text = re.sub(r"\*+", "", text)
         return text.strip()
 
     def generate_summary(self, text, max_summary_tokens=150):
@@ -67,12 +73,11 @@ class SoftPromptTester:
         return self.clean_generated_text(summary)
 
 
-
 if __name__ == "__main__":
     # Initialize the tester
     tester = SoftPromptTester(
         base_model_name="EleutherAI/gpt-neo-125M",
-        soft_prompt_path="res/soft_prompts.pth"
+        soft_prompt_path="res/soft_prompts.pth",
     )
 
     # New test paragraph
