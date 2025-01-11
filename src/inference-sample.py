@@ -80,10 +80,7 @@ class SoftPromptTester:
 
 
 if __name__ == "__main__":
-    tester = SoftPromptTester(
-        base_model_name="EleutherAI/gpt-neo-125M",
-        soft_prompt_path="res/soft_prompts.pth",
-    )
+    tester = SoftPromptTester()
 
     # test paragraph
     test_paragraph = """
